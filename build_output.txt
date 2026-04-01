@@ -1,0 +1,294 @@
+
+> new@0.1.0 build
+> next build
+
+▲ Next.js 16.2.2 (Turbopack)
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 10 errors:
+./src/app/create/page.tsx:4:1
+Export Facebook doesn't exist in target module
+  [90m 2 |[0m
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m 4 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 5 |[0m   [33mFacebook[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mYoutube[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mUploadCloud[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mSparkles[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mCalendar[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mClock[0m 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m12 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m13 |[0m
+  [90m14 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Facebook was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-client] (ecmascript).
+Did you mean to import Webhook?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/create/page.tsx [Client Component Browser]
+    ./src/app/create/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/create/page.tsx [Client Component SSR]
+    ./src/app/create/page.tsx [Server Component]
+
+
+./src/app/create/page.tsx:4:1
+Export Facebook doesn't exist in target module
+  [90m 2 |[0m
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m 4 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 5 |[0m   [33mFacebook[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mYoutube[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mUploadCloud[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mSparkles[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mCalendar[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mClock[0m 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m12 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m13 |[0m
+  [90m14 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Facebook was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-ssr] (ecmascript).
+Did you mean to import Webhook?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/create/page.tsx [Client Component Browser]
+    ./src/app/create/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/create/page.tsx [Client Component SSR]
+    ./src/app/create/page.tsx [Server Component]
+
+
+./src/app/credentials/page.tsx:1:1
+Export Facebook doesn't exist in target module
+[31m[1m>[0m [90m1 |[0m [36mimport[0m { [33mFacebook[0m, [33mYoutube[0m, [33mAlertCircle[0m, [33mCheckCircle2[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m3 |[0m
+  [90m4 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Facebook was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-rsc] (ecmascript).
+Did you mean to import Webhook?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./src/app/history/page.tsx:4:1
+Export Facebook doesn't exist in target module
+  [90m2 |[0m ...
+  [90m3 |[0m ...seState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m4 |[0m ...[33macebook[0m, [33mYoutube[0m, [33mSearch[0m, [33mCalendar[0m, [33mChevronDown[0m, [33mCheckCircle[0m, [33mXCircle[0m, [33mClock[0m } [36mfrom[0m [32m"luc...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...n } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m6 |[0m ...
+  [90m7 |[0m ...[90mata[0m
+
+The export Facebook was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-client] (ecmascript).
+Did you mean to import Webhook?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/history/page.tsx [Client Component Browser]
+    ./src/app/history/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/history/page.tsx [Client Component SSR]
+    ./src/app/history/page.tsx [Server Component]
+
+
+./src/app/history/page.tsx:4:1
+Export Facebook doesn't exist in target module
+  [90m2 |[0m ...
+  [90m3 |[0m ...seState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m4 |[0m ...[33macebook[0m, [33mYoutube[0m, [33mSearch[0m, [33mCalendar[0m, [33mChevronDown[0m, [33mCheckCircle[0m, [33mXCircle[0m, [33mClock[0m } [36mfrom[0m [32m"luc...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...n } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m6 |[0m ...
+  [90m7 |[0m ...[90mata[0m
+
+The export Facebook was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-ssr] (ecmascript).
+Did you mean to import Webhook?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/history/page.tsx [Client Component Browser]
+    ./src/app/history/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/history/page.tsx [Client Component SSR]
+    ./src/app/history/page.tsx [Server Component]
+
+
+./src/app/create/page.tsx:4:1
+Export Youtube doesn't exist in target module
+  [90m 2 |[0m
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m 4 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 5 |[0m   [33mFacebook[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mYoutube[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mUploadCloud[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mSparkles[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mCalendar[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mClock[0m 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m12 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m13 |[0m
+  [90m14 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Youtube was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-client] (ecmascript).
+Did you mean to import Route?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/create/page.tsx [Client Component Browser]
+    ./src/app/create/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/create/page.tsx [Client Component SSR]
+    ./src/app/create/page.tsx [Server Component]
+
+
+./src/app/create/page.tsx:4:1
+Export Youtube doesn't exist in target module
+  [90m 2 |[0m
+  [90m 3 |[0m [36mimport[0m { useState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m 4 |[0m [36mimport[0m { 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m 5 |[0m   [33mFacebook[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 6 |[0m   [33mYoutube[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 7 |[0m   [33mUploadCloud[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 8 |[0m   [33mSparkles[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m 9 |[0m   [33mCalendar[0m, 
+  [90m   |[0m [31m[1m^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m10 |[0m   [33mClock[0m 
+  [90m   |[0m [31m[1m^^^^^^^^[0m
+[31m[1m>[0m [90m11 |[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m12 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m13 |[0m
+  [90m14 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Youtube was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-ssr] (ecmascript).
+Did you mean to import Route?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/create/page.tsx [Client Component Browser]
+    ./src/app/create/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/create/page.tsx [Client Component SSR]
+    ./src/app/create/page.tsx [Server Component]
+
+
+./src/app/credentials/page.tsx:1:1
+Export Youtube doesn't exist in target module
+[31m[1m>[0m [90m1 |[0m [36mimport[0m { [33mFacebook[0m, [33mYoutube[0m, [33mAlertCircle[0m, [33mCheckCircle2[0m } [36mfrom[0m [32m"lucide-react"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m [36mimport[0m { cn } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m3 |[0m
+  [90m4 |[0m [90m// Using a custom icon shape for TikTok since Lucide doesn't have it built-in by default[0m
+
+The export Youtube was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-rsc] (ecmascript).
+Did you mean to import Route?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./src/app/history/page.tsx:4:1
+Export Youtube doesn't exist in target module
+  [90m2 |[0m ...
+  [90m3 |[0m ...seState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m4 |[0m ...[33macebook[0m, [33mYoutube[0m, [33mSearch[0m, [33mCalendar[0m, [33mChevronDown[0m, [33mCheckCircle[0m, [33mXCircle[0m, [33mClock[0m } [36mfrom[0m [32m"luc...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...n } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m6 |[0m ...
+  [90m7 |[0m ...[90mata[0m
+
+The export Youtube was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-client] (ecmascript).
+Did you mean to import Route?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/history/page.tsx [Client Component Browser]
+    ./src/app/history/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/history/page.tsx [Client Component SSR]
+    ./src/app/history/page.tsx [Server Component]
+
+
+./src/app/history/page.tsx:4:1
+Export Youtube doesn't exist in target module
+  [90m2 |[0m ...
+  [90m3 |[0m ...seState } [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m4 |[0m ...[33macebook[0m, [33mYoutube[0m, [33mSearch[0m, [33mCalendar[0m, [33mChevronDown[0m, [33mCheckCircle[0m, [33mXCircle[0m, [33mClock[0m } [36mfrom[0m [32m"luc...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...n } [36mfrom[0m [32m"@/lib/utils"[0m;
+  [90m6 |[0m ...
+  [90m7 |[0m ...[90mata[0m
+
+The export Youtube was not found in module [project]/node_modules/lucide-react/dist/esm/lucide-react.js [app-ssr] (ecmascript).
+Did you mean to import Route?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/history/page.tsx [Client Component Browser]
+    ./src/app/history/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/history/page.tsx [Client Component SSR]
+    ./src/app/history/page.tsx [Server Component]
+
+
+    at <unknown> (./src/app/create/page.tsx:4:1)
+    at <unknown> (./src/app/create/page.tsx:4:1)
+    at <unknown> (./src/app/credentials/page.tsx:1:1)
+    at <unknown> (./src/app/history/page.tsx:4:1)
+    at <unknown> (./src/app/history/page.tsx:4:1)
+    at <unknown> (./src/app/create/page.tsx:4:1)
+    at <unknown> (./src/app/create/page.tsx:4:1)
+    at <unknown> (./src/app/credentials/page.tsx:1:1)
+    at <unknown> (./src/app/history/page.tsx:4:1)
+    at <unknown> (./src/app/history/page.tsx:4:1)
