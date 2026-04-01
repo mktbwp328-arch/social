@@ -45,7 +45,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (err: any) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    console.error('Posts POST Error:', err)
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }
 
@@ -53,14 +54,15 @@ export async function GET() {
   try {
     const supabase = await createClient()
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // AUTH BYPASS: Use a fixed UUID for single-user local use if no session exists
+    const { data: { user } } = await supabase.auth.getUser()
+    const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
+    const userId = user?.id || DEFAULT_USER_ID
 
     const { data, error } = await supabase
       .from('posts')
       .select('*')
+      .eq('user_id', userId)
       .order('scheduled_at', { ascending: false })
 
     if (error) {
@@ -69,6 +71,7 @@ export async function GET() {
 
     return NextResponse.json({ data })
   } catch (err: any) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    console.error('Posts GET Error:', err)
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }

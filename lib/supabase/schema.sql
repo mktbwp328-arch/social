@@ -3,7 +3,7 @@
 -- 1. Create a table for Posts
 CREATE TABLE IF NOT EXISTS public.posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID NOT NULL,
   caption TEXT,
   media_url TEXT,
   scheduled_at TIMESTAMPTZ NOT NULL,
@@ -37,7 +37,7 @@ CREATE POLICY "Users can delete their own posts" ON public.posts
 -- 2. Create a table for Social Media Connections
 CREATE TABLE IF NOT EXISTS public.user_connections (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID NOT NULL,
   platform TEXT NOT NULL CHECK (platform IN ('facebook', 'tiktok', 'youtube')),
   access_token TEXT NOT NULL,
   refresh_token TEXT,
@@ -60,7 +60,7 @@ CREATE POLICY "Users can manage their own connections" ON public.user_connection
 -- 3. Create a table for Developer API Settings (Credentials)
 CREATE TABLE IF NOT EXISTS public.api_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID NOT NULL,
   platform TEXT NOT NULL CHECK (platform IN ('facebook', 'tiktok', 'youtube')),
   client_id TEXT NOT NULL,
   client_secret TEXT NOT NULL,
