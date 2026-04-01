@@ -6,10 +6,10 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient()
     
-    // AUTH BYPASS: Use a fixed UUID for single-user local use if no session exists
-    let { data: { user } } = await supabase.auth.getUser()
+    // SAFE AUTH CHECK for single-user mode
+    const { data: authData } = await supabase.auth.getUser()
     const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
-    const userId = user?.id || DEFAULT_USER_ID
+    const userId = authData?.user?.id || DEFAULT_USER_ID
 
     const body = await request.json()
     const { caption, media_url, scheduled_at, platforms } = body
@@ -54,10 +54,10 @@ export async function GET() {
   try {
     const supabase = await createClient()
     
-    // AUTH BYPASS: Use a fixed UUID for single-user local use if no session exists
-    const { data: { user } } = await supabase.auth.getUser()
+    // SAFE AUTH CHECK for single-user mode
+    const { data: authData } = await supabase.auth.getUser()
     const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
-    const userId = user?.id || DEFAULT_USER_ID
+    const userId = authData?.user?.id || DEFAULT_USER_ID
 
     const { data, error } = await supabase
       .from('posts')

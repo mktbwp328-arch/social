@@ -4,9 +4,11 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    
+    // SAFE AUTH CHECK for single-user mode
+    const { data: authData } = await supabase.auth.getUser()
     const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
-    const userId = user?.id || DEFAULT_USER_ID
+    const userId = authData?.user?.id || DEFAULT_USER_ID
 
     const { data, error } = await supabase
       .from('api_settings')
@@ -28,9 +30,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    
+    // SAFE AUTH CHECK for single-user mode
+    const { data: authData } = await supabase.auth.getUser()
     const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
-    const userId = user?.id || DEFAULT_USER_ID
+    const userId = authData?.user?.id || DEFAULT_USER_ID
 
     const body = await request.json()
     const { platform, client_id, client_secret } = body
