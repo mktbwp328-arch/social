@@ -10,13 +10,18 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('api_settings')
-      .select('platform, client_id') // Don't return secrets in GET for security, or return masked
+      .select('platform, client_id')
       
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: `DB Error: ${error.message}` }, { status: 500 })
 
     return NextResponse.json({ data })
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  } catch (err: any) {
+    console.error('Settings GET Error:', err)
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: err.message,
+      hint: 'Ensure .env.local is correct and SQL schema is applied.'
+    }, { status: 500 })
   }
 }
 
@@ -45,10 +50,14 @@ export async function POST(request: Request) {
       }, { onConflict: 'user_id, platform' })
       .select()
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: `DB Error: ${error.message}` }, { status: 500 })
 
     return NextResponse.json({ data })
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  } catch (err: any) {
+    console.error('Settings POST Error:', err)
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: err.message
+    }, { status: 500 })
   }
 }
