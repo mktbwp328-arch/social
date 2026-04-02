@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { publishPost } from '@/lib/social-service'
+// @ts-ignore
+import { after } from 'next/server'
 
 export async function POST(request: Request) {
   try {
@@ -36,11 +38,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    const postId = data[0].id
+
     // Trigger publishing if scheduled for now (or near now)
     const scheduledDate = new Date(scheduled_at)
     if (scheduledDate <= new Date()) {
-      // Execute asynchronously or await if you want to wait for response
-      publishPost(data[0].id).catch(console.error)
+      // Use 'after' to ensure background publishing completes on Vercel
+      if (typeof after === 'function') {
+        after(async () => {
+          console.log(`Starting background publish for post ${postId}...`)
+          await publishPost(postId).catch(console.error)
+        })
+      } else {
+        // Fallback for environments where 'after' is not available
+        publishPost(postId).catch(console.error)
+      }
     }
 
     return NextResponse.json({ data }, { status: 201 })

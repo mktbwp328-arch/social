@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getValidAccessToken } from './supabase/token-service'
+import axios from 'axios'
 
 /**
  * Main service to publish scheduled posts to social media platforms.
@@ -30,48 +32,38 @@ export async function publishPost(postId: string) {
   let hasError = false
 
   try {
-    // 3. Process each platform
+    // 3. Download the video from Supabase Storage
+    const mediaBuffer = await downloadMedia(post.media_url)
+
+    // 4. Process each platform
     for (const platform of post.platforms) {
-      // Get the user's connection (access tokens) for this platform
-      const { data: conn, error: connError } = await supabase
-        .from('user_connections')
-        .select('*')
-        .eq('user_id', post.user_id)
-        .eq('platform', platform)
-        .single()
-
-      if (connError || !conn) {
-        results.push({ platform, error: `Account not connected for ${platform}` })
-        hasError = true
-        continue
-      }
-
-      // Check if token is expired and refresh if necessary (TBD: implementing refresh logic)
-      
       try {
-        // Platform-specific API calls
+        // Get valid token (auto-refresh if needed)
+        const accessToken = await getValidAccessToken(post.user_id, platform)
+        
         let platformResult;
         switch (platform) {
           case 'facebook':
-            platformResult = await publishToFacebook(post, conn)
+            platformResult = await publishToFacebook(post, accessToken, mediaBuffer)
             break
           case 'tiktok':
-            platformResult = await publishToTikTok(post, conn)
+            platformResult = await publishToTikTok(post, accessToken, mediaBuffer)
             break
           case 'youtube':
-            platformResult = await publishToYouTube(post, conn)
+            platformResult = await publishToYouTube(post, accessToken, mediaBuffer)
             break
           default:
             throw new Error(`Platform ${platform} not supported yet`)
         }
         results.push({ platform, success: true, data: platformResult })
       } catch (err: any) {
-        results.push({ platform, error: err.message })
+        console.error(`Error publishing to ${platform}:`, err)
+        results.push({ platform, error: err.message || 'Unknown error' })
         hasError = true
       }
     }
 
-    // 4. Update final status
+    // 5. Update final status
     const finalStatus = hasError ? 'failed' : 'posted'
     const errorMsg = hasError ? JSON.stringify(results.filter(r => r.error)) : null
     
@@ -84,6 +76,7 @@ export async function publishPost(postId: string) {
     return { success: !hasError, results }
     
   } catch (err: any) {
+    console.error('Publishing worker error:', err)
     await supabase.from('posts').update({ 
       status: 'failed', 
       error_message: err.message 
@@ -92,21 +85,120 @@ export async function publishPost(postId: string) {
   }
 }
 
-async function publishToFacebook(post: any, conn: any) {
-  // Mock API call to Meta Graph API
-  console.log(`Publishing to Facebook for user ${post.user_id}...`)
-  // Implementation: Use conn.access_token to POST to/${conn.account_id}/feed or /photos
-  return { id: 'fb_mock_id_' + Date.now() }
+/**
+ * Downloads a video from Supabase Storage public URL into a Buffer.
+ */
+async function downloadMedia(url: string): Promise<Buffer> {
+  const response = await axios.get(url, { responseType: 'arraybuffer' })
+  return Buffer.from(response.data)
 }
 
-async function publishToTikTok(post: any, conn: any) {
-  // Mock API call to TikTok Content Posting API
-  console.log(`Publishing to TikTok for user ${post.user_id}...`)
-  return { id: 'tt_mock_id_' + Date.now() }
+/**
+ * Real API Implementation for Facebook Reels
+ */
+async function publishToFacebook(post: any, accessToken: string, mediaBuffer: Buffer) {
+  // Meta Reels Publishing (simplified flow)
+  // 1. Initialize
+  const initRes = await axios.post(`https://graph.facebook.com/v19.0/me/video_reels`, {
+    upload_phase: 'start',
+    access_token: accessToken
+  })
+  const videoId = initRes.data.video_id
+  const uploadUrl = `https://rupload.facebook.com/video-reels-upload/${videoId}`
+
+  // 2. Upload
+  await axios.post(uploadUrl, mediaBuffer, {
+    headers: {
+      'Authorization': `OAuth ${accessToken}`,
+      'offset': '0',
+      'file_size': mediaBuffer.length.toString(),
+      'Content-Type': 'application/octet-stream'
+    }
+  })
+
+  // 3. Finish & Publish
+  const publishRes = await axios.post(`https://graph.facebook.com/v19.0/me/video_reels`, {
+    upload_phase: 'finish',
+    video_id: videoId,
+    video_state: 'PUBLISHED',
+    description: post.caption,
+    access_token: accessToken
+  })
+
+  return publishRes.data
 }
 
-async function publishToYouTube(post: any, conn: any) {
-  // Mock API call to YouTube Data API
-  console.log(`Publishing to YouTube for user ${post.user_id}...`)
-  return { id: 'yt_mock_id_' + Date.now() }
+/**
+ * Real API Implementation for TikTok Direct Post
+ */
+async function publishToTikTok(post: any, accessToken: string, mediaBuffer: Buffer) {
+  // TikTok Content Posting API v2
+  // 1. Initialize
+  const initRes = await axios.post('https://open.tiktokapis.com/v2/post/publish/video/init/', 
+    {
+      post_info: {
+        title: post.caption.substring(0, 50),
+        description: post.caption,
+        privacy_level: 'PUBLIC_TO_EVERYONE',
+        disable_comment: false
+      },
+      source_info: {
+        source: 'FILE_UPLOAD',
+        video_size: mediaBuffer.length,
+        chunk_size: mediaBuffer.length,
+        total_chunk_count: 1
+      }
+    },
+    { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+  )
+
+  const uploadUrl = initRes.data.data.upload_url
+  const publishId = initRes.data.data.publish_id
+
+  // 2. Upload binary
+  // TikTok requires binary direct PUT to the provided upload_url
+  await axios.put(uploadUrl, mediaBuffer, {
+    headers: {
+      'Content-Type': 'video/mp4',
+      'Content-Length': mediaBuffer.length
+    }
+  })
+
+  return { publish_id: publishId }
+}
+
+/**
+ * Real API Implementation for YouTube Shorts
+ */
+async function publishToYouTube(post: any, accessToken: string, mediaBuffer: Buffer) {
+  // YouTube Data API v3 (Resumable Upload)
+  // 1. Initialize
+  const metadata = {
+    snippet: {
+      title: post.caption.substring(0, 70),
+      description: post.caption + ' #shorts',
+      categoryId: '22'
+    },
+    status: {
+      privacyStatus: 'public',
+      selfDeclaredMadeForKids: false
+    }
+  }
+
+  const initRes = await axios.post('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', 
+    metadata, 
+    { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' } }
+  )
+
+  const uploadUrl = initRes.headers.location
+
+  // 2. Upload
+  const uploadRes = await axios.put(uploadUrl, mediaBuffer, {
+    headers: {
+      'Content-Type': 'video/mp4',
+      'Content-Length': mediaBuffer.length
+    }
+  })
+
+  return uploadRes.data
 }
