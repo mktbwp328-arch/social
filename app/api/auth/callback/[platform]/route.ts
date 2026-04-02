@@ -14,11 +14,11 @@ export async function GET(
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user) {
-    return NextResponse.redirect(`${origin}/login`)
-  }
+  // AUTH BYPASS: Using fixed user ID for local mode
+  const { data: authData } = await supabase.auth.getUser()
+  const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000'
+  const userId = authData?.user?.id || DEFAULT_USER_ID
 
   // 1. Get API Settings for Client Secret
   const { data: settings } = await supabase
@@ -32,25 +32,65 @@ export async function GET(
   }
 
   try {
-    // 2. Exchange code for access token (Implementation placeholder for each platform)
-    // In a real app, you would use fetch() here to call the platform's token endpoint
-    // with client_id, client_secret, and the code.
-    
-    console.log(`Exchanging code for platform: ${platform}`)
-    
-    // Mock token exchange
-    const mockAccessToken = `mock_access_token_${platform}_${Date.now()}`
-    const mockRefreshToken = `mock_refresh_token_${platform}_${Date.now()}`
+    let accessToken = ''
+    let refreshToken = ''
+    let expiresIn = 3600
+    const redirectUri = `${origin}/api/auth/callback/${platform}`
+
+    // 2. Real token exchange for each platform
+    if (platform === 'tiktok') {
+      const res = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_key: settings.client_id,
+          client_secret: settings.client_secret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error_description || 'TikTok token exchange failed')
+      accessToken = data.access_token
+      refreshToken = data.refresh_token
+      expiresIn = data.expires_in
+    } 
+    else if (platform === 'youtube') {
+      const res = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: settings.client_id,
+          client_secret: settings.client_secret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error_description || 'YouTube token exchange failed')
+      accessToken = data.access_token
+      refreshToken = data.refresh_token
+      expiresIn = data.expires_in
+    }
+    else if (platform === 'facebook') {
+      const res = await fetch(`https://graph.facebook.com/v18.0/oauth/access_token?client_id=${settings.client_id}&redirect_uri=${redirectUri}&client_secret=${settings.client_secret}&code=${code}`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error?.message || 'Facebook token exchange failed')
+      accessToken = data.access_token
+      expiresIn = data.expires_in || 5184000 // default 60 days for long-lived tokens
+    }
 
     // 3. Save to user_connections
     const { error: upsertError } = await supabase
       .from('user_connections')
       .upsert({
-        user_id: user.id,
+        user_id: userId,
         platform,
-        access_token: mockAccessToken,
-        refresh_token: mockRefreshToken,
-        expires_at: new Date(Date.now() + 3600 * 1000).toISOString(), // 1 hour expiry
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id, platform' })
 
