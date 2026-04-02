@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Calendar, ChevronDown, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
+import { Search, Calendar, CheckCircle, XCircle, Clock, Loader2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -21,6 +21,7 @@ interface Post {
   platforms: string[];
   status: string;
   created_at: string;
+  error_message?: string;
 }
 
 const TABS = ["All", "Pending", "Processing", "Posted", "Failed"];
@@ -30,6 +31,7 @@ export default function HistoryPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPublishing, setIsPublishing] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -42,6 +44,26 @@ export default function HistoryPage() {
       console.error("Failed to fetch posts:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePublishNow = async (postId: string) => {
+    if (isPublishing) return;
+    setIsPublishing(postId);
+    try {
+      const res = await fetch(`/api/posts/${postId}/publish`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Published successfully!");
+        fetchPosts();
+      } else {
+        alert(`Failed: ${data.error}`);
+        fetchPosts();
+      }
+    } catch (err: any) {
+      alert("Error triggering publish");
+    } finally {
+      setIsPublishing(null);
     }
   };
 
@@ -74,9 +96,11 @@ export default function HistoryPage() {
               className="pl-9 pr-4 py-2 rounded-xl bg-card border border-border outline-none focus:ring-2 focus:ring-primary transition-all text-sm w-full md:w-64"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl hover:bg-secondary transition-all text-sm font-medium">
-            <Calendar className="w-4 h-4" />
-            Date Range
+          <button 
+            onClick={fetchPosts}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl hover:bg-secondary transition-all text-sm font-medium"
+          >
+            Refresh
           </button>
         </div>
       </div>
@@ -103,7 +127,7 @@ export default function HistoryPage() {
           <div className="w-24 text-center">Platforms</div>
           <div>Content</div>
           <div className="w-32 text-center">Status</div>
-          <div className="w-48 text-right pr-4">Scheduled Date</div>
+          <div className="w-64 text-right pr-4">Actions / Scheduled Date</div>
         </div>
 
         <div className="divide-y divide-border">
@@ -130,6 +154,9 @@ export default function HistoryPage() {
                   {post.media_url && (
                     <span className="text-[10px] text-primary font-bold uppercase mt-1 block">Has Attachment</span>
                   )}
+                  {post.error_message && (
+                    <p className="text-[10px] text-red-500 mt-1 line-clamp-1" title={post.error_message}>{post.error_message}</p>
+                  )}
                 </div>
 
                 <div className="w-32 flex justify-center">
@@ -147,13 +174,24 @@ export default function HistoryPage() {
                   </span>
                 </div>
 
-                <div className="w-48 flex items-center justify-end gap-4 pr-1">
+                <div className="w-64 flex items-center justify-end gap-3 pr-1">
+                   {(post.status === 'pending' || post.status === 'failed') && (
+                     <button 
+                       onClick={() => handlePublishNow(post.id)}
+                       disabled={isPublishing === post.id}
+                       className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                     >
+                       {isPublishing === post.id ? (
+                         <Loader2 className="w-3 h-3 animate-spin" />
+                       ) : (
+                         <Play className="w-3 h-3 fill-current" />
+                       )}
+                       Publish Now
+                     </button>
+                   )}
                   <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    {format(new Date(post.scheduled_at), "MMM d, yyyy, h:mm a")}
+                    {format(new Date(post.scheduled_at), "MMM d, h:mm a")}
                   </span>
-                  <button className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary text-muted-foreground hover:text-foreground">
-                    <ChevronDown className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
             ))
