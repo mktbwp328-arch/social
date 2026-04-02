@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Calendar, CheckCircle, XCircle, Clock, Loader2, Play } from "lucide-react";
+import { Search, Calendar, CheckCircle, XCircle, Clock, Loader2, Play, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
@@ -32,6 +33,8 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isPublishing, setIsPublishing] = useState<string | null>(null);
+
+  const router = useRouter();
 
   const fetchPosts = async () => {
     try {
@@ -64,6 +67,18 @@ export default function HistoryPage() {
       alert("Error triggering publish");
     } finally {
       setIsPublishing(null);
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+      const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPosts(prev => prev.filter(p => p.id !== postId));
+      }
+    } catch (err) {
+      alert("Failed to delete post");
     }
   };
 
@@ -127,7 +142,7 @@ export default function HistoryPage() {
           <div className="w-24 text-center">Platforms</div>
           <div>Content</div>
           <div className="w-32 text-center">Status</div>
-          <div className="w-64 text-right pr-4">Actions / Scheduled Date</div>
+          <div className="w-72 text-right pr-4">Actions / Scheduled Date</div>
         </div>
 
         <div className="divide-y divide-border">
@@ -174,30 +189,46 @@ export default function HistoryPage() {
                   </span>
                 </div>
 
-                <div className="w-64 flex items-center justify-end gap-3 pr-1">
-                   {(post.status === 'pending' || post.status === 'failed') && (
+                <div className="w-72 flex items-center justify-end gap-3 pr-1">
+                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
+                     {(post.status === 'pending' || post.status === 'failed') && (
+                       <button 
+                         onClick={() => handlePublishNow(post.id)}
+                         disabled={isPublishing === post.id}
+                         title="Publish Now"
+                         className="p-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 rounded-lg transition-all"
+                       >
+                         {isPublishing === post.id ? (
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                         ) : (
+                           <Play className="w-4 h-4 fill-current" />
+                         )}
+                       </button>
+                     )}
                      <button 
-                       onClick={() => handlePublishNow(post.id)}
-                       disabled={isPublishing === post.id}
-                       className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                        onClick={() => router.push(`/create?edit=${post.id}`)}
+                        title="Edit Post"
+                        className="p-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-all"
                      >
-                       {isPublishing === post.id ? (
-                         <Loader2 className="w-3 h-3 animate-spin" />
-                       ) : (
-                         <Play className="w-3 h-3 fill-current" />
-                       )}
-                       Publish Now
+                       <Edit2 className="w-4 h-4" />
                      </button>
-                   )}
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                     <button 
+                        onClick={() => handleDelete(post.id)}
+                        title="Delete Post"
+                        className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-all"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                   </div>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap min-w-[120px] text-right">
                     {format(new Date(post.scheduled_at), "MMM d, h:mm a")}
                   </span>
                 </div>
               </div>
             ))
           ) : (
-             <div className="p-12 text-center">
-                 <p className="text-muted-foreground">No posts found.</p>
+             <div className="p-12 text-center text-muted-foreground">
+                 No posts found in this category.
              </div>
           )}
         </div>

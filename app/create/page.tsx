@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { 
   UploadCloud, 
   Sparkles, 
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
@@ -39,18 +39,50 @@ const PLATFORMS = [
   { id: "youtube", name: "YouTube", icon: YoutubeIcon, color: "hover:bg-red-600/20 hover:text-red-500 hover:border-red-500" },
 ];
 
-export default function CreatePost() {
+function CreatePostContent() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [caption, setCaption] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
   const supabase = createClient();
+
+  useEffect(() => {
+    if (editId) {
+      const fetchPost = async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch(`/api/posts/${editId}`);
+          const result = await res.json();
+          if (res.ok && result.data) {
+            const post = result.data;
+            setCaption(post.caption);
+            setSelectedPlatforms(post.platforms);
+            setExistingMediaUrl(post.media_url);
+            
+            if (post.scheduled_at) {
+              const d = new Date(post.scheduled_at);
+              setDate(d.toISOString().split('T')[0]);
+              setTime(d.toTimeString().split(' ')[0].substring(0, 5));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load post for editing", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchPost();
+    }
+  }, [editId]);
 
   const togglePlatform = (id: string) => {
     setSelectedPlatforms(prev => 
@@ -74,7 +106,7 @@ export default function CreatePost() {
     setStatus(null);
 
     try {
-      let mediaUrl = "";
+      let mediaUrl = existingMediaUrl || "";
 
       // 1. Upload file if it exists
       if (file) {
@@ -95,15 +127,20 @@ export default function CreatePost() {
         mediaUrl = publicUrl;
       }
 
-      // 2. Create the post via API
-      const response = await fetch('/api/posts', {
-        method: 'POST',
+      // 2. Create or Update the post
+      const url = editId ? `/api/posts/${editId}` : '/api/posts';
+      const method = editId ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           caption,
           media_url: mediaUrl,
           scheduled_at: new Date(`${date}T${time}`).toISOString(),
           platforms: selectedPlatforms,
+          // If editing a failed post, reset to pending
+          status: editId ? 'pending' : undefined
         }),
       });
 
@@ -113,7 +150,7 @@ export default function CreatePost() {
         throw new Error(result.error || 'Failed to schedule post');
       }
 
-      setStatus({ type: 'success', message: 'Post scheduled successfully!' });
+      setStatus({ type: 'success', message: editId ? 'Post updated successfully!' : 'Post scheduled successfully!' });
       setTimeout(() => router.push('/history'), 2000);
 
     } catch (err: any) {
@@ -126,12 +163,12 @@ export default function CreatePost() {
     <div className="p-8 max-w-5xl mx-auto pb-24">
       <div className="mb-8 border-b border-border pb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create Post</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{editId ? "Edit Post" : "Create Post"}</h1>
           <p className="text-muted-foreground mt-2">Design and schedule your content across multiple platforms.</p>
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/history')}
             className="px-6 py-2 rounded-md font-medium text-muted-foreground hover:bg-secondary transition-colors"
           >
             Cancel
@@ -141,7 +178,7 @@ export default function CreatePost() {
             disabled={isLoading}
             className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-md hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Schedule Post"}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (editId ? "Save Changes" : "Schedule Post")}
           </button>
         </div>
       </div>
@@ -189,7 +226,7 @@ export default function CreatePost() {
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "border-2 border-dashed border-border rounded-xl p-12 flex flex-col items-center justify-center text-center hover:bg-secondary/50 transition-colors cursor-pointer group relative overflow-hidden",
-                file && "border-primary/50 bg-primary/5"
+                (file || existingMediaUrl) && "border-primary/50 bg-primary/5"
               )}
             >
               <input 
@@ -203,12 +240,17 @@ export default function CreatePost() {
                 <UploadCloud className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
               <p className="text-foreground font-medium mb-1">
-                {file ? file.name : "Click or drag and drop to upload"}
+                {file ? file.name : (existingMediaUrl ? "Media Attached (Click to change)" : "Click or drag and drop to upload")}
               </p>
               <p className="text-sm text-muted-foreground">MP4, MOV, JPG or PNG (max. 500MB)</p>
-              {file && (
+              {existingMediaUrl && !file && (
                 <div className="mt-4 text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-full">
-                  File Selected
+                  Using existing media
+                </div>
+              )}
+              {file && (
+                <div className="mt-4 text-xs font-bold text-amber-500 px-3 py-1 bg-amber-500/10 rounded-full">
+                  New file selected (Will replace existing)
                 </div>
               )}
             </div>
@@ -269,5 +311,17 @@ export default function CreatePost() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreatePost() {
+  return (
+    <Suspense fallback={
+      <div className="p-8 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CreatePostContent />
+    </Suspense>
   );
 }
